@@ -136,7 +136,7 @@ CELERY_RESULT_BACKEND = 'amqp://user:password@127.0.0.1:5672//'
 CELERY_TIMEZONE = 'Asia/Shanghai'
 
 
-# 使用本地文件覆盖settings.py，主要用于github上保护配置
+# 使用本地文件覆盖settings.py，用于github上保护配置
 try:
     from .local_settings import *
 except ImportError:
