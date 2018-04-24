@@ -15,7 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from demo.views import demo_task
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('async_demo_task', demo_task),
 ]

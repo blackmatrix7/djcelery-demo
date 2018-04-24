@@ -11,7 +11,7 @@ __author__ = 'blackmatrix'
 
 
 @celery_app.task
-def async_task():
+def async_demo_task():
     logging.info('run async_task')
 
 
