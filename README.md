@@ -58,7 +58,7 @@ INSTALLED_APPS = [
 # 导入tasks文件，因为我们使用autodiscover_tasks
 # 会自动导入每个app下的tasks.py，所以这个配置不是很必要
 # 如果需要导入其他非tasks.py的模块，则需要再此配置需要导入的模块
-CELERY_IMPORTS = ('demo.tasks', )
+# CELERY_IMPORTS = ('demo.tasks', )
 # 配置 celery broker
 CELERY_BROKER_URL = 'amqp://user:password@127.0.0.1:5672//'
 # 配置 celery backend 用Redis会比较好
@@ -99,6 +99,34 @@ def async_task():
     logging.info('run async_task')
 ```
 
+### 调用异步任务
+
+在demo/views.py中定义一个页面，只用来调用异步任务。
+
+```python
+from django.http import HttpResponse
+from demo.tasks import async_demo_task
+
+# Create your views here.
+def demo_task(request):
+	# delay表示将任务交给celery执行
+    async_demo_task.delay()
+    return HttpResponse('任务已经运行')
+```
+
+在proj/urls.py中注册对应的url。
+
+```python
+from django.contrib import admin
+from django.urls import path
+from demo.views import demo_task
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('async_demo_task', demo_task),
+]
+```
+
 ### 启动Celery Worker
 
 使用命令启动worker：
@@ -132,5 +160,47 @@ def async_task():
   . demo.tasks.async_demo_task
 
 [2018-04-24 08:24:47,656: INFO/MainProcess] Connected to amqp://user:**@127.0.0.1:5672//
+```
+
+需要注意的是日志中的tasks部分，可以看到已经自动识别到了demo.tasks.async_demo_task这个用于演示的任务。
+
+如果没有识别到，检查下celery实例是否调用autodiscover_tasks方法，或配置文件的CELERY_IMPORTS是否配置正确。
+
+### 调用异步任务
+
+在demo/views.py中定义一个页面，只用来调用异步任务。
+
+```python
+from django.http import HttpResponse
+from demo.tasks import async_demo_task
+
+# Create your views here.
+def demo_task(request):
+	# delay表示将任务交给celery执行
+    async_demo_task.delay()
+    return HttpResponse('任务已经运行')
+```
+
+在proj/urls.py中注册对应的url。
+
+```python
+from django.contrib import admin
+from django.urls import path
+from demo.views import demo_task
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('async_demo_task', demo_task),
+]
+```
+
+最后，启动django，访问url http://127.0.0.1:8000/async_demo_task 调用异步任务。
+
+在worker的日志中，可以看到类似的执行结果，即说明任务已经由celery异步执行。
+
+```powershell
+[2018-04-24 09:25:52,677: INFO/MainProcess] Received task: demo.tasks.async_demo_task[1105c262-9371-4791-abd2-6f78d654b391]
+[2018-04-24 09:25:52,681: INFO/Worker-4] run async_task
+[2018-04-24 09:25:52,899: INFO/MainProcess] Task demo.tasks.async_demo_task[1105c262-9371-4791-abd2-6f78d654b391] succeeded in 0.21868160199665s: None
 ```
 
