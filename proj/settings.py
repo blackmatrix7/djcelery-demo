@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djcelery',
+    'demo'
 ]
 
 MIDDLEWARE = [
@@ -119,4 +121,23 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Celery 相关配置
+# celery 相关配置
+# 导入tasks文件，因为我们使用autodiscover_tasks
+# 会自动导入每个app下的tasks.py，所以这个配置不是很必要
+# 如果需要导入其他非tasks.py的模块，则需要再此配置需要导入的模块
+# CELERY_IMPORTS = ('demo.tasks', )
+# 配置 celery broker
+CELERY_BROKER_URL = 'amqp://user:password@127.0.0.1:5672//'
+# 配置 celery backend
+CELERY_RESULT_BACKEND = 'amqp://user:password@127.0.0.1:5672//'
+# -- 以上最基础的配置就已经完成，如果没有其他需求的话，这样就可以保证异步任务正常运行 --
+
+# 设定时区，配置计划任务时需要
+CELERY_TIMEZONE = 'Asia/Shanghai'
+
+
+# 使用本地文件覆盖settings.py，主要用于github上保护配置
+try:
+    from .local_settings import *
+except ImportError:
+    pass
