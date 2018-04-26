@@ -105,16 +105,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'zh-Hans'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
+TIME_ZONE = 'Asia/Shanghai'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -131,9 +130,6 @@ CELERY_BROKER_URL = 'amqp://user:password@127.0.0.1:5672//'
 # 配置 celery backend
 CELERY_RESULT_BACKEND = 'amqp://user:password@127.0.0.1:5672//'
 # -- 以上最基础的配置就已经完成，如果没有其他需求的话，这样就可以保证异步任务正常运行 --
-
-# 设定时区，配置计划任务时需要
-CELERY_TIMEZONE = 'Asia/Shanghai'
 
 
 # 使用本地文件覆盖settings.py，用于github上保护配置
