@@ -198,9 +198,15 @@ urlpatterns = [
 
 在worker的日志中，可以看到类似的执行结果，即说明任务已经由celery异步执行。
 
+如果出现"Using settings.DEBUG leads to a memory leak, never "的警告信息，则在生产环境中关闭掉django的debug模式即可。
+
 ```powershell
 [2018-04-24 09:25:52,677: INFO/MainProcess] Received task: demo.tasks.async_demo_task[1105c262-9371-4791-abd2-6f78d654b391]
 [2018-04-24 09:25:52,681: INFO/Worker-4] run async_task
 [2018-04-24 09:25:52,899: INFO/MainProcess] Task demo.tasks.async_demo_task[1105c262-9371-4791-abd2-6f78d654b391] succeeded in 0.21868160199665s: None
 ```
+
+
+
+
 
