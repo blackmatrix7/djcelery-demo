@@ -1,5 +1,5 @@
-# djcelery demo
-基于django 2.0.4 的 djcelery 配置示例
+# Django Celery 配置实践
+基于django 2.0.4 的 djcelery 配置示例。
 
 [TOC]
 
@@ -205,6 +205,60 @@ urlpatterns = [
 [2018-04-24 09:25:52,681: INFO/Worker-4] run async_task
 [2018-04-24 09:25:52,899: INFO/MainProcess] Task demo.tasks.async_demo_task[1105c262-9371-4791-abd2-6f78d654b391] succeeded in 0.21868160199665s: None
 ```
+
+## 为任务分配队列
+
+请参考另一个项目[celery-demo](https://github.com/blackmatrix7/celery-demo)
+
+## 配置计划任务
+
+同样请参考另一个项目[celery-demo](https://github.com/blackmatrix7/celery-demo)
+
+## 使用Django Admin管理Celery计划任务
+
+使用djcelery，而不直接使用celery的好处就在于可以通过Django Admin对Celery的计划任务进行管理。
+
+### 创建数据库
+
+`python manage.py migrate`
+
+创建Django Admin和djcelery对应的表，这里的数据库使用默认的sqlite。
+
+### 创建管理员
+
+`python manage.py createsuperuser`，依次输入超级管理员帐号、邮箱、密码。
+
+演示项目中设置帐号：admin  密码： superplayer123
+
+### 修改配置文件
+
+在settings.py中，增加两项配置：
+
+```python
+# 设定时区，配置计划任务时需要
+CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+```
+
+### 创建计划任务
+
+访问 http://127.0.0.1:8000/admin/djcelery/periodictask/add/，用于创建定时任务。
+
+简单的解释下创建定时任务的选项：
+
+| 字段 | 说明                   |
+| ---- | ---------------------- |
+| 名称 | 便于理解的计划任务名称 |
+|      |                        |
+|      |                        |
+|      |                        |
+|      |                        |
+|      |                        |
+|      |                        |
+|      |                        |
+|      |                        |
+
+
 
 
 

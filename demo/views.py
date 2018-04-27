@@ -7,3 +7,5 @@ def demo_task(request):
     async_demo_task.delay()
     return HttpResponse('任务已经运行')
 
+
+

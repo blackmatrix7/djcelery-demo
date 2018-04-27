@@ -131,6 +131,10 @@ CELERY_BROKER_URL = 'amqp://user:password@127.0.0.1:5672//'
 CELERY_RESULT_BACKEND = 'amqp://user:password@127.0.0.1:5672//'
 # -- 以上最基础的配置就已经完成，如果没有其他需求的话，这样就可以保证异步任务正常运行 --
 
+# 设定时区，配置计划任务时需要
+CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
 
 # 使用本地文件覆盖settings.py，用于github上保护配置
 try:
