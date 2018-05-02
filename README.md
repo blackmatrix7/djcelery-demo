@@ -258,7 +258,7 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 |      |                        |
 |      |                        |
 
-
+## 通过Model操作计划任务
 
 
 
