@@ -246,21 +246,69 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 简单的解释下创建定时任务的选项：
 
-| 字段 | 说明                   |
-| ---- | ---------------------- |
-| 名称 | 便于理解的计划任务名称 |
-|      |                        |
-|      |                        |
-|      |                        |
-|      |                        |
-|      |                        |
-|      |                        |
-|      |                        |
-|      |                        |
+| 字段               | 说明                                                 |
+| ------------------ | ---------------------------------------------------- |
+| 名称               | 便于理解的计划任务名称                               |
+| Task (registered)  | 选择一个已注册的任务                                 |
+| Task (custom)      |                                                      |
+| Enabled            | 任务是否启用                                         |
+| Interval           | 按某个时间间隔执行                                   |
+| Crontab            | 定时任务， 和Interval二选一                          |
+| Arguments          | 以list的形式传入参数，json格式                       |
+| Keyword arguments: | 以dict的形式传入参数，json格式                       |
+| Expires            | 任务到期时间                                         |
+| Queue              | 指定队列，队列名需要在配置文件的 CELERY_QUEUES定义好 |
+| Exchange           | Exchange                                             |
+| Routing key        | Routing key                                          |
 
 ## 通过Model操作计划任务
 
+本质上来说，就是对PeriodicTask这个model的操作。
 
+下面模拟一个简单的增加计划任务的接口：
 
+```python
+def add_task(request):
+    interval = IntervalSchedule.objects.filter(every=30, period='seconds').first()
+    periodic_task = PeriodicTask(name='test', task='demo.tasks.async_demo_task', interval=interval)
+    periodic_task.save()
+    return HttpResponse('任务已经添加')
+```
 
+在proj/urls.py中增加url地址进行访问：
 
+```python
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('async_demo_task', demo_task),
+    path('add_task', add_task),
+    path('get_periodic_task_list', get_periodic_task_list),
+]
+```
+
+通过浏览器访问http://127.0.0.1:8000/add_task 就可以直接添加一个间隔30秒的计划任务了。
+
+再添加之前，请确保beat和worker正常运行，然后在beat中可以看到类似日志，检测到了Schedule改变，并且自动运行刚刚添加的任务。
+
+```
+[2018-05-03 17:18:10,012: INFO/MainProcess] DatabaseScheduler: Schedule changed.
+[2018-05-03 17:18:10,013: INFO/MainProcess] Writing entries (0)...
+[2018-05-03 17:18:40,020: INFO/MainProcess] Scheduler: Sending due task test (demo.tasks.async_demo_task)
+[2018-05-03 17:19:10,021: INFO/MainProcess] Scheduler: Sending due task test (demo.tasks.async_demo_task)
+```
+
+同样的，通过获取PeriodicTask的数据，也可以得到正在运行的任务。
+
+```python
+def get_periodic_task_list(request):
+    """
+    获取周期性任务列表
+    :return:
+    """
+    periodic_task_list = PeriodicTask.objects.all()
+    data = [model_to_dict(periodic_task) for periodic_task in periodic_task_list]
+    resp = json.dumps(data, cls=CustomJSONEncoder, ensure_ascii=False)
+    return HttpResponse(resp, content_type='application/json', status=200)
+```
+
+更多的功能都可以通过操作djcelery的model进行实现。
