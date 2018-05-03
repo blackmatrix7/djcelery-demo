@@ -15,10 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from demo.views import demo_task, get_periodic_task_list
+from demo.views import demo_task, get_periodic_task_list, add_task
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('async_demo_task', demo_task),
+    path('add_task', add_task),
     path('get_periodic_task_list', get_periodic_task_list),
 ]

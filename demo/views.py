@@ -4,11 +4,11 @@ import decimal
 import datetime
 from django.http import HttpResponse
 from demo.tasks import async_demo_task
-from djcelery.models import PeriodicTask
 from django.utils.timezone import is_aware
 from django.utils.functional import Promise
 from django.utils.duration import duration_iso_string
 from django.core.serializers.json import DjangoJSONEncoder
+from djcelery.models import PeriodicTask, IntervalSchedule
 
 from django.forms.models import model_to_dict
 
@@ -57,4 +57,10 @@ def get_periodic_task_list(request):
     resp = json.dumps(data, cls=CustomJSONEncoder, ensure_ascii=False)
     return HttpResponse(resp, content_type='application/json', status=200)
 
+
+def add_task(request):
+    interval = IntervalSchedule.objects.filter(every=30, period='seconds').first()
+    periodic_task = PeriodicTask(name='test', task='demo.tasks.async_demo_task', interval=interval)
+    periodic_task.save()
+    return HttpResponse('任务已经添加')
 
