@@ -218,6 +218,12 @@ urlpatterns = [
 
 使用djcelery，而不直接使用celery的好处就在于可以通过Django Admin对Celery的计划任务进行管理。
 
+### 启动进程
+
+使用计划任务时，除了保证原先的worker正常运行外（worker的启动方式见上），还需要启动beats：
+
+`python manage.py celery beat`
+
 ### 创建数据库
 
 `python manage.py migrate`
@@ -287,10 +293,6 @@ urlpatterns = [
 ```
 
 通过浏览器访问http://127.0.0.1:8000/add_task 就可以直接添加一个间隔30秒的计划任务了。
-
-使用计划任务时，除了保证原先的worker正常运行外（worker的启动方式见上），还需要启动beats：
-
-`python manage.py celery beat`
 
 然后在beat中可以看到类似日志，检测到了Schedule改变，并且自动运行刚刚添加的任务。
 
