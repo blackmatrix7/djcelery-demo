@@ -288,7 +288,11 @@ urlpatterns = [
 
 通过浏览器访问http://127.0.0.1:8000/add_task 就可以直接添加一个间隔30秒的计划任务了。
 
-再添加之前，请确保beat和worker正常运行，然后在beat中可以看到类似日志，检测到了Schedule改变，并且自动运行刚刚添加的任务。
+使用计划任务时，除了保证原先的worker正常运行外（worker的启动方式见上），还需要启动beats：
+
+`python manage.py celery beat`
+
+然后在beat中可以看到类似日志，检测到了Schedule改变，并且自动运行刚刚添加的任务。
 
 ```
 [2018-05-03 17:18:10,012: INFO/MainProcess] DatabaseScheduler: Schedule changed.
