@@ -224,6 +224,10 @@ urlpatterns = [
 
 `python manage.py celery beat`
 
+也可以beat和worker一起启动
+
+`python manage.py celery -A project worker -l info --beat` 
+
 ### 创建数据库
 
 `python manage.py migrate`
