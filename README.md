@@ -180,7 +180,7 @@ urlpatterns = [
 
 如果需要指定配置文件，可以在末尾增加 --settings参数，如：
 
-`python ytmanage.py celery -A project worker -l info --beat --settings=settings.debug`
+`python manage.py celery -A project worker -l info --beat --settings=settings.debug`
 
 这样就是指定settings/debug.py这个文件作为配置文件
 
