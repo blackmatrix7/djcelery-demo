@@ -131,13 +131,31 @@ urlpatterns = [
 
 使用命令启动worker：
 
-`manage.py celery -A proj worker -l info`
+`python manage.py celery -A proj worker -l info`
 
 对参数做个简单的说明：
 
 -A proj是指项目目录下的celery实例。演示项目名为proj，所以-A的值是proj。如果项目名是其他名字，将proj换成项目对应的名字。
 
 -l info 是指日志记录的级别，这里记录的是info级别的日志。
+
+如果需要输出日志到文件，增加-f参数：
+
+`celery -A project worker -l info -f logs/celery.log` 
+
+代表把日志输出到logs/celery.log目录下
+
+如果需要指定worker处理的队列，增加-Q参数，如：
+
+`python manage.py celery -A proj worker -l info -Q helloworld`
+
+这样就是指定worker处理helloworld队列
+
+如果需要指定配置文件，可以在末尾增加 --settings参数，如：
+
+`python ytmanage.py celery -A project worker -l info --beat --settings=settings.debug`
+
+这样就是指定settings/debug.py这个文件作为配置文件
 
 如果配置没有问题，能成功连接broker，则会有类似以下的日志：
 
