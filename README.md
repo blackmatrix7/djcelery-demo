@@ -67,18 +67,19 @@ INSTALLED_APPS = [
 如果仅仅需求使用celery异步执行任务的话，以下最基础的配置就可以满足需求
 
 ```python
-# 导入tasks文件，因为我们使用autodiscover_tasks
-# 会自动导入每个app下的tasks.py，所以这个配置不是很必要
-# 如果需要导入其他非tasks.py的模块，则需要再此配置需要导入的模块
+# 导入tasks文件，如果使用autodiscover_tasks(见后)
+# 则Celery在启动时，会自动检索每个app下的tasks.py，所以这个配置不是很必要
+# 如果需要导入其他非tasks.py的任务，或者没有使用如果使用autodiscover_tasks
+# 则需要再此配置需要导入的模块
 # CELERY_IMPORTS = ('demo.tasks', )
 # 配置 celery broker
 CELERY_BROKER_URL = 'amqp://user:password@127.0.0.1:5672//'
 # 配置 celery backend 用Redis会比较好
 # 因为手上没有redis服务器，所以演示时用RabbitMQ替代
 CELERY_RESULT_BACKEND = 'amqp://user:password@127.0.0.1:5672//'
-# 创建队列，如果有需要为不同任务分配不同队列的需求，需要在配置文件中创建队列
-# 这里创建了一个名为djcelery_demo的队列，routing_key为djcelery.demo
-# 关于创建队列的参数，详见celery的官方手册，这里不再赘述
+# 声明队列，如果有需要为不同任务分配不同队列的需求，需要在配置文件中声明队列
+# 这里声明了一个名为djcelery_demo的队列，routing_key为djcelery.demo
+# 关于声明队列的参数及作用，详见celery的官方手册，这里不再赘述
 from kombu import Queue
 CELERY_QUEUES = (
     Queue('djcelery_demo', routing_key='djcelery.demo'),
@@ -184,32 +185,56 @@ urlpatterns = [
 
 这样就是指定settings/debug.py这个文件作为配置文件
 
-如果配置没有问题，能成功连接broker，则会有类似以下的日志：
+如果配置没有问题，能成功连接broker，则会输出类似以下日志：
 
 ```powershell
- -------------- celery@Matrix.local v3.1.26.post2 (Cipater)
+ -------------- celery@Matrix.lan v3.1.26.post2 (Cipater)
 ---- **** ----- 
---- * ***  * -- Darwin-17.5.0-x86_64-i386-64bit
+--- * ***  * -- Darwin-17.7.0-x86_64-i386-64bit
 -- * - **** --- 
 - ** ---------- [config]
-- ** ---------- .> app:         proj:0x108ab1eb8
-- ** ---------- .> transport:   amqp://user:**@127.0.0.1:5672//
+- ** ---------- .> app:         proj:0x10c4491d0
+- ** ---------- .> transport:   amqp://rabbit:**@127.0.0.1:5672//
 - ** ---------- .> results:     amqp://
 - *** --- * --- .> concurrency: 4 (prefork)
 -- ******* ---- 
 --- ***** ----- [queues]
- -------------- .> celery           exchange=celery(direct) key=celery
+ -------------- .> djcelery_demo    exchange=celery(direct) key=djcelery.demo
                 
 
 [tasks]
   . demo.tasks.async_demo_task
 
-[2018-04-24 08:24:47,656: INFO/MainProcess] Connected to amqp://user:**@127.0.0.1:5672//
+[2018-08-11 23:45:38,104: INFO/MainProcess] Connected to amqp://rabbit:**@127.0.0.1:5672//
 ```
 
-需要注意的是日志中的tasks部分，可以看到已经自动识别到了demo.tasks.async_demo_task这个用于演示的任务。
+输出的日志中有几个值得关注的地方：
+
+**transport：**
+
+即settings.py中关于broker的配置，如果这里不是在settings.py中配置的transport，需要检查下启动的配置文件是否正确。
+
+**results:** 
+
+即settings.py中关于backend的配置，如果这里不是在settings.py中配置的backend，需要检查下启动的配置文件是否正确。
+
+**queues：**
+
+显示之前在配置文件中声明的djcelery_demo队列，及它的exchange和routing_key。
+
+如果在配置文件中声明的队列，没有在日志中出现，则需要确认下配置是否正确。
+
+**tasks：**
+
+即在各个app下tasks.py中定义的异步任务。
+
+demo中已经自动识别demo.tasks.async_demo_task这个用于演示的任务。
 
 如果没有识别到，检查下celery实例是否调用autodiscover_tasks方法，或配置文件的CELERY_IMPORTS是否配置正确。
+
+**Connected to amqp：**
+
+表示已经连接到RabbitMQ，如果无法正常连接，请检查配置、网络或RabbitMQ。
 
 ### 调用异步任务
 
