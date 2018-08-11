@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from kombu import Queue
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -134,7 +135,9 @@ CELERY_RESULT_BACKEND = 'amqp://user:password@127.0.0.1:5672//'
 # 设定时区，配置计划任务时需要
 CELERY_TIMEZONE = 'Asia/Shanghai'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-
+CELERY_QUEUES = (
+    Queue('djcelery_demo', routing_key='djcelery.demo'),
+)
 
 # 使用本地文件覆盖settings.py，用于github上保护配置
 try:
