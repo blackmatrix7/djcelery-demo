@@ -94,9 +94,9 @@ CELERY_QUEUES = (
 from celery import Celery
 from django.conf import settings
 
-# 创建celery应用
+# 创建celery应用，proj保持和django项目名称一直
 celery_app = Celery('proj', broker=settings.CELERY_BROKER_URL)
-# 从配置文件中加载除celery外的其他配置
+# 从配置文件中加载除broker外的其他配置
 celery_app.config_from_object('django.conf:settings')
 # 自动检索每个app下的tasks.py
 celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
