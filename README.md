@@ -3,11 +3,21 @@
 
 [TOC]
 
+## 前言
+
+本文主要对Django Celery的配置和使用进行一些分享，不会包含太多详细的，关于Celery方面的解释。
+
+在阅读本文之前，需要对Celery有一定的了解。
+
+Celery部分，请参考Celery的官方手册：http://docs.celeryproject.org/en/latest/
+
 ## 所需环境
 
-python 3.5.2
+Python 3.5.2
 
-rabbitmq
+Rabbitmq
+
+Redis
 
 ### 安装所需的包
 
@@ -21,6 +31,8 @@ rabbitmq
 
 `django-admin startproject proj`
 
+*注：后续提到proj的地方，都是指django的项目名称为proj，如果你设定的项目名称是其他，就以设定的项目名称代替。*
+
 ### 创建Django App
 
 创建一个用于演示的django app，这里名为demo
@@ -31,7 +43,7 @@ rabbitmq
 
 ### 基础配置项目
 
-修改proj/settings.py配置文件，增加celery相关配置。
+修改`proj/settings.py`配置文件，增加celery相关配置。
 
 #### 增加djcelery app
 
@@ -64,11 +76,18 @@ CELERY_BROKER_URL = 'amqp://user:password@127.0.0.1:5672//'
 # 配置 celery backend 用Redis会比较好
 # 因为手上没有redis服务器，所以演示时用RabbitMQ替代
 CELERY_RESULT_BACKEND = 'amqp://user:password@127.0.0.1:5672//'
+# 创建队列，如果有需要为不同任务分配不同队列的需求，需要在配置文件中创建队列
+# 这里创建了一个名为djcelery_demo的队列，routing_key为djcelery.demo
+# 关于创建队列的参数，详见celery的官方手册，这里不再赘述
+from kombu import Queue
+CELERY_QUEUES = (
+    Queue('djcelery_demo', routing_key='djcelery.demo'),
+)
 ```
 
 ### 创建Celery实例
 
-在proj目录下，编辑celery.py文件，用于创建celery实例
+新建`proj/celery.py`文件，用于创建celery实例
 
 ```python
 from celery import Celery
@@ -82,11 +101,17 @@ celery_app.config_from_object('django.conf:settings')
 celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 ```
 
+修改`proj/__init__.py`，增加一个from import，主要目的是在Django 项目启动时能够加载celery.py的内容。
+
+```
+from .celery import *
+```
+
 ### 编写异步任务
 
 在之前创建的demo/tasks.py中，编写一个用于演示的异步任务。
 
-注意每个异步任务之前都需要使用@celery_app.task装饰器。
+注意每个异步任务之前都需要使用@celery_app.task装饰器进行装饰。
 
 celery_app实际是之前在proj/celery.py中创建的celery的实例，如果你的实例名称不一样，做对应的修改即可。
 
@@ -109,7 +134,9 @@ from demo.tasks import async_demo_task
 
 # Create your views here.
 def demo_task(request):
-	# delay表示将任务交给celery执行
+	# delay表示将任务交给celery执行，具体的也烦请参考celery官方手册
+    # 这里主要是对Django Celery的配置及可能遇到的问题进行说明和分享
+    # 不会把太多的精力放在Celery的使用上
     async_demo_task.delay()
     return HttpResponse('任务已经运行')
 ```
@@ -186,7 +213,7 @@ urlpatterns = [
 
 ### 调用异步任务
 
-在demo/views.py中定义一个页面，只用来调用异步任务。
+在`demo/views.py`中定义一个页面，只用来调用异步任务。
 
 ```python
 from django.http import HttpResponse
@@ -199,7 +226,7 @@ def demo_task(request):
     return HttpResponse('任务已经运行')
 ```
 
-在proj/urls.py中注册对应的url。
+在`proj/urls.py`中注册对应的url。
 
 ```python
 from django.contrib import admin
@@ -223,14 +250,6 @@ urlpatterns = [
 [2018-04-24 09:25:52,681: INFO/Worker-4] run async_task
 [2018-04-24 09:25:52,899: INFO/MainProcess] Task demo.tasks.async_demo_task[1105c262-9371-4791-abd2-6f78d654b391] succeeded in 0.21868160199665s: None
 ```
-
-## 为任务分配队列
-
-请参考另一个项目[celery-demo](https://github.com/blackmatrix7/celery-demo)
-
-## 配置计划任务
-
-同样请参考另一个项目[celery-demo](https://github.com/blackmatrix7/celery-demo)
 
 ## 使用Django Admin管理Celery计划任务
 
@@ -287,11 +306,13 @@ CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 | Expires            | 任务到期时间                                         |
 | Queue              | 指定队列，队列名需要在配置文件的 CELERY_QUEUES定义好 |
 | Exchange           | Exchange                                             |
-| Routing key        | Routing key                                          |
+| Routing key        | 指定队列时，对应的Routing key也要填写                |
 
 ## 通过Model操作计划任务
 
 本质上来说，就是对PeriodicTask这个model的操作。
+
+### 新增计划任务
 
 下面模拟一个简单的增加计划任务的接口：
 
